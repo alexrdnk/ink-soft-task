@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Copy and build your Spring Boot JAR
 COPY . .
+RUN chmod +x ./gradlew
 RUN ./gradlew build -x test
 
 # Runtime image
