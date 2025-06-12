@@ -5,7 +5,7 @@ WORKDIR /app
 # Copy and build your Spring Boot JAR
 COPY . .
 RUN chmod +x ./gradlew
-RUN ./gradlew build -x test
+RUN ./gradlew build -x test --stacktrace --info
 
 # Runtime image
 FROM eclipse-temurin:21-jre-jammy
