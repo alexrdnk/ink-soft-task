@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #4F46E5; /* Indigo 600 */
+  --secondary: #10B981; /* Green 500 */
+  --background: #758aa9; /* Light neutral background */
+  --card-background: #ffffff;
+  --text-primary: #1F2937; /* Gray 900 */
+  --text-secondary: #ffffff; /* Gray 700 */
+  --border-color: #ffffff; /* Gray 200 */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Base styles for cards */
+.card {
+  background-color: var(--card-background);
+  border-radius: 0.75rem; /* More rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+  padding: 1.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Utility for section titles */
+.section-title {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 700; /* font-bold */
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  text-align: center; /* Center align section titles */
+}

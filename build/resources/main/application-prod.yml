@@ -1,0 +1,46 @@
+spring:
+  webclient:
+    base-url: https://newsapi.org
+  retry:
+    max-attempts: 3
+    initial-interval: 1000
+    multiplier: 2.0
+    max-interval: 10000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  server:
+    port: 8080
+    base-path: /actuator
+
+logging:
+  level:
+    root: INFO
+
+server:
+  port: ${PORT:8080}
+  address: 0.0.0.0
+  tomcat:
+    connection-timeout: 20000
+    max-threads: 200
+    min-spare-threads: 10
+    threads:
+      max: 200
+      min-spare: 10
+  shutdown: graceful
+  error:
+    include-message: always
+    include-binding-errors: always
+
+newsapi:
+  base-url: https://newsapi.org
+  key: ${NEWSAPI_KEY}
+
+openai:
+  api-key: ${OPENAI_API_KEY} 

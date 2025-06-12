@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  backend:
+    build: .
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - NEWSAPI_KEY=${NEWSAPI_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 

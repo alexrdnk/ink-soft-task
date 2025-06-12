@@ -1,0 +1,14 @@
+spring:
+  webclient:
+    base-url: https://newsapi.org
+
+logging:
+  level:
+    root: DEBUG
+
+newsapi:
+  base-url: https://newsapi.org
+  key: ${NEWSAPI_KEY}
+
+openai:
+  api-key: ${OPENAI_API_KEY} 

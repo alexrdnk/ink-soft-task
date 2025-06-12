@@ -1,0 +1,50 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+.header {
+  background-color: var(--primary);
+  color: #fff;
+  padding: 1.5rem 2.5rem; /* Increased padding */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for header */
+  position: sticky; /* Make header sticky */
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.8rem; /* Slightly larger logo */
+  font-weight: bold;
+  letter-spacing: -0.025em; /* Tighten letter spacing */
+}
+
+.logo .highlight {
+  color: var(--secondary);
+}
+
+.content {
+  flex: 1;
+  padding: 2.5rem; /* Increased padding */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Slightly wider min width for columns */
+  gap: 2rem; /* Increased gap between grid items */
+  max-width: 1200px; /* Max width for content */
+  margin: 0 auto; /* Center the content */
+  width: 100%;
+}
+
+
+.footer {
+  text-align: center;
+  padding: 1.5rem; /* Increased padding */
+  background-color: var(--card-background);
+  border-top: 1px solid var(--border-color); /* Use border color variable */
+  color: var(--text-secondary); /* Softer text color */
+  margin-top: auto; /* Push footer to the bottom */
+}

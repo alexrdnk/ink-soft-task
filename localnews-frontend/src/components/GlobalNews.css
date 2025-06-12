@@ -1,0 +1,14 @@
+
+.global-news-container {
+  /* Центрируем секцию по горизонтали */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.news-card {
+  /* Задаем максимальную ширину карточки и растягиваем до 100% контейнера */
+  max-width: 800px;
+  width: 100%;
+}
