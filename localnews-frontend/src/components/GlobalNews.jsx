@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function GlobalNews() {
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     setIsLoading(true); // Set loading true on effect run
-    axios.get('/api/articles/global')
+    axios.get(`${API_URL}/api/articles/global`)
       .then(res => {
         setArticles(res.data);
         setIsLoading(false); // Set loading false on success

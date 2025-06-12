@@ -3,6 +3,8 @@ import axios from 'axios';
 import { X, Search } from 'lucide-react';
 import './CitySearch.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function CitySearch({ onSelectCity }) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);            // now City objects
@@ -20,8 +22,7 @@ export default function CitySearch({ onSelectCity }) {
 
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      // after (correct)
-        axios.get(`/api/cities?prefix=${encodeURIComponent(query)}`)
+      axios.get(`${API_URL}/api/cities?prefix=${encodeURIComponent(query)}`)
         .then(res => {
           // res.data is assumed to be City[]
           setSuggestions(res.data.slice(0, 5));

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { MapPin, Calendar, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function LocalNews({ city }) {
   // city may be a string or an object { name, stateCode, … }
   const cityName = city && typeof city === 'object' ? city.name : city;
@@ -13,7 +15,7 @@ export default function LocalNews({ city }) {
     setIsLoading(true);
     const timer = setTimeout(() => {
       axios
-        .get(`/api/articles/local/${encodeURIComponent(cityName)}`)
+        .get(`${API_URL}/api/articles/local/${encodeURIComponent(cityName)}`)
         .then(res => {
           setArticles(res.data);
           setIsLoading(false);
