@@ -1,5 +1,5 @@
 # Use a slim JDK
-FROM eclipse-temurin:21-jdk-focal as build
+FROM eclipse-temurin:21-jdk-jammy as build
 WORKDIR /app
 
 # Copy and build your Spring Boot JAR

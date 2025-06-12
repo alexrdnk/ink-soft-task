@@ -12,14 +12,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Order(1)
@@ -29,11 +32,14 @@ public class NewsFetchService implements ApplicationRunner {
     private static final int DESIRED_GLOBAL = 20;
     private static final int DESIRED_LOCAL  = 80;
     private static final int PAGE_SIZE      = 5;
+    private static final long RATE_LIMIT_DELAY = TimeUnit.HOURS.toMillis(12); // 12 hours delay for rate limit
+    private static final int MAX_RETRIES = 3;
 
     private final InMemoryStorage storage;
     private final LlmClassifier classifier;
     private final RestTemplate rt = new RestTemplate();
     private final String apiKey;
+    private Instant lastRateLimitHit = Instant.MIN;
 
     public NewsFetchService(
             InMemoryStorage storage,
@@ -65,6 +71,11 @@ public class NewsFetchService implements ApplicationRunner {
                 + "&apiKey=" + apiKey;
 
         try {
+            if (shouldSkipDueToRateLimit()) {
+                log.warn("Skipping global fetch due to recent rate limit");
+                return 0;
+            }
+
             ResponseEntity<NewsApiResponse> resp = rt.getForEntity(url, NewsApiResponse.class);
             for (NewsApiArticle na : resp.getBody().getArticles()) {
                 if (count >= DESIRED_GLOBAL) break;
@@ -79,6 +90,9 @@ public class NewsFetchService implements ApplicationRunner {
                     count++;
                 }
             }
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            handleRateLimit();
+            log.error("Rate limit hit while fetching global headlines", e);
         } catch (Exception e) {
             log.error("Failed to fetch global headlines, falling back to 0 globals", e);
         }
@@ -93,6 +107,11 @@ public class NewsFetchService implements ApplicationRunner {
 
         outer:
         for (City city : cities) {
+            if (shouldSkipDueToRateLimit()) {
+                log.warn("Skipping local fetch due to recent rate limit");
+                break;
+            }
+
             String cityName = city.getName();
             String q = URLEncoder.encode(cityName, StandardCharsets.UTF_8);
             String url = "https://newsapi.org/v2/everything"
@@ -101,23 +120,48 @@ public class NewsFetchService implements ApplicationRunner {
                     + "&q=" + q
                     + "&apiKey=" + apiKey;
 
-            try {
-                ResponseEntity<NewsApiResponse> resp = rt.getForEntity(url, NewsApiResponse.class);
-                for (NewsApiArticle na : resp.getBody().getArticles()) {
-                    if (count >= DESIRED_LOCAL) break outer;
+            int retries = 0;
+            while (retries < MAX_RETRIES) {
+                try {
+                    ResponseEntity<NewsApiResponse> resp = rt.getForEntity(url, NewsApiResponse.class);
+                    for (NewsApiArticle na : resp.getBody().getArticles()) {
+                        if (count >= DESIRED_LOCAL) break outer;
 
-                    Article a = mapToArticle(na);
-                    a.setLocalHint(true);
-                    a.setCity(cityName);
-                    storage.saveArticle(a);
-                    count++;
+                        Article a = mapToArticle(na);
+                        a.setLocalHint(true);
+                        a.setCity(cityName);
+                        storage.saveArticle(a);
+                        count++;
+                    }
+                    break; // Success, exit retry loop
+                } catch (HttpClientErrorException.TooManyRequests e) {
+                    handleRateLimit();
+                    log.warn("Rate limit hit while fetching local news for {}, waiting...", cityName);
+                    retries++;
+                    if (retries < MAX_RETRIES) {
+                        try {
+                            Thread.sleep(1000 * retries); // Exponential backoff
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to fetch local for {}, skipping: {}", cityName, e.toString());
+                    break;
                 }
-            } catch (Exception e) {
-                log.warn("Failed to fetch local for {}, skipping: {}", cityName, e.toString());
             }
         }
         log.info("Fetched {} local articles", count);
         return count;
+    }
+
+    private boolean shouldSkipDueToRateLimit() {
+        return lastRateLimitHit.plusMillis(RATE_LIMIT_DELAY).isAfter(Instant.now());
+    }
+
+    private void handleRateLimit() {
+        lastRateLimitHit = Instant.now();
     }
 
     /** Safely calls the LLM, defaulting to GLOBAL/no-city on any error. */
